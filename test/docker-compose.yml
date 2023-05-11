@@ -1,0 +1,71 @@
+version: '2'
+services:
+  elasticsearch-node1:
+    container_name: elasticsearch
+    image: docker.io/bitnami/elasticsearch:$ELASTIC_VERSION
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=elasticsearch-cluster
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-node1,elasticsearch-node2,elasticsearch-node3
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-node1
+      - ELASTICSEARCH_HEAP_SIZE=4g
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=$ELASTIC_SECURITY
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - 'elasticsearch_node1_data:/bitnami'
+
+  elasticsearch-node2:
+    container_name: elasticsearch02
+    image: docker.io/bitnami/elasticsearch:$ELASTIC_VERSION
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=elasticsearch-cluster
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-node1,elasticsearch-node2,elasticsearch-node3
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-node2
+      - ELASTICSEARCH_HEAP_SIZE=4g
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=$ELASTIC_SECURITY
+    volumes:
+      - 'elasticsearch_node2_data:/bitnami'
+
+  elasticsearch-node3:
+    container_name: elasticsearch03
+    image: docker.io/bitnami/elasticsearch:$ELASTIC_VERSION
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=elasticsearch-cluster
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-node1,elasticsearch-node2,elasticsearch-node3
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-node3
+      - ELASTICSEARCH_HEAP_SIZE=4g
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=$ELASTIC_SECURITY
+    volumes:
+      - 'elasticsearch_node3_data:/bitnami'
+  cerebro-dev:
+    container_name: cerebro-dev
+    image: lmenezes/cerebro
+    ports:
+     - 9000:9000
+  kibana:
+    container_name: kibana
+    image: kibana:7.17.9
+    ports:
+      - 5601:5601
+      - 5602:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:9200","http://elasticsearch02:9200","http://elasticsearch03:9200"]
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=$ELASTIC_PASSWORD
+    links: ['elasticsearch-node1','elasticsearch-node2','elasticsearch-node3']
+    depends_on: ['elasticsearch-node1','elasticsearch-node2','elasticsearch-node3']
+volumes:
+  elasticsearch_node1_data:
+    driver: local
+  elasticsearch_node2_data:
+    driver: local
+  elasticsearch_node3_data:
+    driver: local
